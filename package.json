@@ -1,0 +1,17 @@
+{
+  "name": "error-to-object",
+  "version": "0.0.1",
+  "description": "Convert JS Error into a plain object",
+  "main": "index.js",
+  "homepage": "https://github.com/kevbook/error-to-object",
+  "license": "MIT",
+  "devDependencies": {
+    "verror": "^1.10.1"
+  },
+  "scripts": {
+    "test": "node index.test.js"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}
