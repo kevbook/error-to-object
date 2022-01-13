@@ -46,9 +46,10 @@ function toJSON (from) {
  *
  * @param {error} value
  * @param {number} options.maxDepth
+ * @param {boolean} options.openTelemetry
  */
 function errorToObject (value, options = {}) {
-  const { maxDepth = Number.POSITIVE_INFINITY } = options;
+  const { maxDepth = Number.POSITIVE_INFINITY, openTelemetry = false } = options;
 
   if (typeof value === 'object' && value !== null) {
     const message = [];
@@ -77,6 +78,16 @@ function errorToObject (value, options = {}) {
       // If "cause" key exists make sure its enumerable
       if (from.hasOwnProperty('cause')) {
         Object.defineProperty(from, 'cause', { enumerable: true });
+      } else if (from.hasOwnProperty('jse_cause')) {
+        // https://github.com/joyent/node-verror/blob/master/lib/verror.js#L182
+        from.cause = from.jse_cause;
+        delete from.jse_cause;
+      }
+
+      // https://github.com/joyent/node-verror/blob/master/lib/verror.js#L172
+      if (from.hasOwnProperty('jse_shortmsg')) {
+        from.message = from.jse_shortmsg;
+        delete from.jse_shortmsg;
       }
 
       for (const [key, value] of Object.entries(from)) {
@@ -149,7 +160,16 @@ function errorToObject (value, options = {}) {
     });
 
     result.message = message.reverse().join(': ');
-    result.stack = stack.reverse().join('\ncaused by: ');
+
+    // Support OpenTelemetry semantic convention for exceptions
+    if (openTelemetry) {
+      result.stacktrace = stack.reverse().join('\ncaused by: ');
+      result.type = result.name;
+      delete result.name;
+    } else {
+      result.stack = stack.reverse().join('\ncaused by: ');
+    }
+
     return result;
   }
 

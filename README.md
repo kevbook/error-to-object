@@ -6,6 +6,10 @@ Convert JS Error into a plain object. Useful when sending error data over the ne
 - Supports chaining with [VError](https://github.com/joyent/node-verror)/[NError](https://github.com/Netflix/nerror) style causes
 - Message output is similar to the standard VError behaviour of appending message with the cause.message, separating the two with a `: `(since `Error Causes` doesn't do this)
 - Full stack trace for error & all causes
+- Converts to OpenTelemetry semantic convention for exceptions `{type, message, stacktrace}`. Note: other attributes remain untouched.
+  - https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/exceptions.md
+  - https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/overview.md
+  - https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/logs/data-model.md
 
 ```js
 const errorToObject = require('./index');
@@ -21,7 +25,8 @@ error2.meta = { method: 'GET', rpcUser: 123 };
 const error3 = new VError(error2, 'Error3 message');
 
 // Final error
-const error4 = new Error('Error 4 message', {cause: error3});
+const error4 = new Error('Error 4 message');
+error4.cause = error3;
 
 /**
  * Convert JS Error into a plain object
@@ -29,8 +34,9 @@ const error4 = new Error('Error 4 message', {cause: error3});
  * @public
  * @param {error} value
  * @param {number} options.maxDepth
+ * @param {boolean} options.openTelemetry
  */
-console.log(errorToObject(error4));
+console.log(errorToObject(error4, { openTelemetry: true }));
 ```
 
 ---
