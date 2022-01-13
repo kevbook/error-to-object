@@ -90,7 +90,7 @@ function errorToObject (value, options = {}) {
         delete from.jse_shortmsg;
       }
 
-      for (const [key, value] of Object.entries(from)) {
+      for (let [key, value] of Object.entries(from)) {
         // eslint-disable-next-line node/prefer-global/buffer
         if (typeof Buffer === 'function' && Buffer.isBuffer(value)) {
           to[key] = '[object Buffer]';
